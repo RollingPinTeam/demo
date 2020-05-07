@@ -2,15 +2,13 @@ using System.Collections.Generic;
 
 public enum SelectType
 {
-    None = 0,
-    Self = 1,
-    Firend = 2,
-    FirendAndMe = 3,
-    Enemy = 4,
-    AllFirend = 5,
-    AllFirendAndMe = 6,
-    AllEnemy = 7,
-    All = 8,
+    Self,
+    Firend,
+    FirendWithMe,
+    Enemy,
+    AllFirend,
+    AllEnemy,
+    All,
 }
 
 public enum SkillID
@@ -54,6 +52,43 @@ public abstract class Skill
         }
 
         return null;
+    }
+
+    public void Cast(Unit owner, Unit target)
+    {
+        var env = new Env() { caster = owner, owner = owner };
+
+        switch(GetSelectType())
+        {
+            case SelectType.Self: 
+                env.target = owner;
+                break;
+            case SelectType.Firend:
+                env.target = target;
+                break;
+            case SelectType.FirendWithMe:
+                env.target = target;
+                break;
+            case SelectType.Enemy:  
+                env.target = target;
+                break;
+            case SelectType.AllFirend:
+                env.targets = ModelMgr.inst.heros;
+                break;
+            case SelectType.AllEnemy:
+                env.targets = ModelMgr.inst.enemys;
+                break;
+            case SelectType.All:
+                var targets = new List<Unit>();
+                targets.AddRange(ModelMgr.inst.heros);
+                targets.AddRange(ModelMgr.inst.enemys);
+                env.targets = targets;
+                break;
+        }
+
+        Execute(env);
+        ModelMgr.inst.CostElement(GetElements());
+        owner.DoAction();
     }
 
     public void SetShortKey(string key) { shortKey = key; }

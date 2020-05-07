@@ -31,23 +31,24 @@ public class Interaction
         }
     }
 
+    public virtual void OnEnter() {}
     public virtual void OnExit() {}
+}
+
+public class ListArgs
+{
+    public int index = 0;
 }
 
 public class SelectItem<TItem, TArgs> : Interaction where TItem : ListItem<TArgs>
 {
-    private ListView<TItem, TArgs> list;
+    protected ListView<TItem, TArgs> list;
+    protected int index;
 
     public SelectItem(ListView<TItem, TArgs> list, int startIndex)
     {
         this.list = list;
-        events.Add(InputCmd.Left, ctx => MoveFocus(MoveDir.Left));
-        events.Add(InputCmd.Right, ctx => MoveFocus(MoveDir.Right));
-        events.Add(InputCmd.Up, ctx => MoveFocus(MoveDir.Up));
-        events.Add(InputCmd.Down, ctx => MoveFocus(MoveDir.Down));
-        events.Add(InputCmd.Submit, ctx => OnChoose(list.currItem));
-        events.Add(InputCmd.Cancel, ctx => OnCancel());
-        list.SetFocus(startIndex);
+        index = startIndex;
     }
 
     private void MoveFocus(MoveDir dir)
@@ -60,7 +61,19 @@ public class SelectItem<TItem, TArgs> : Interaction where TItem : ListItem<TArgs
         }
     }
 
-    public override void OnExit() { list.LostFocus(); }
+    public override void OnEnter()
+    {
+        events.Add(InputCmd.Left, ctx => MoveFocus(MoveDir.Left));
+        events.Add(InputCmd.Right, ctx => MoveFocus(MoveDir.Right));
+        events.Add(InputCmd.Up, ctx => MoveFocus(MoveDir.Up));
+        events.Add(InputCmd.Down, ctx => MoveFocus(MoveDir.Down));
+        events.Add(InputCmd.Submit, ctx => OnChoose(list.currItem));
+        events.Add(InputCmd.Cancel, ctx => OnCancel());
+        list.SaveStash();
+        list.SetFocus(index);
+    }
+
+    public override void OnExit() { list.ApplyStash(); }
     protected virtual void OnCancel() {}
     protected virtual void OnSelect(TItem t) {}
     protected virtual void OnChoose(TItem t) {}

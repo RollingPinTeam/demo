@@ -27,6 +27,7 @@ public class InputMgr
     public void Push(Interaction interaction)
     {   
         interactions.Push(interaction);
+        interaction.OnEnter();
     }
 
     public void Pop()

@@ -9,13 +9,14 @@ public enum PosType
 
 public class Unit 
 {
+    public int id;
     public string name { get; private set; }
     public int hp { get; private set; }
     public int maxHp { get; private set; }
     public int atk { get; private set; }
     public int def { get; private set; }
+    public int ap { get; private set; }
     public PosType pos { get; private set; }
-    public bool isActioned { get; private set; }
     public bool isDodge { get; private set; }
     public bool isDefense { get; private set; }
     public bool isCounter { get; private set; }
@@ -24,8 +25,9 @@ public class Unit
     public Unit coveredTarget { get; private set; }
     public List<Skill> skills { get; private set; } = new List<Skill>();
 
-    public Unit(UnitCfg cfg, PosType posType)
+    public Unit(int id, UnitCfg cfg, PosType posType)
     {
+        this.id = id;
         name = cfg.name;
         maxHp = cfg.hp;
         hp = cfg.hp;
@@ -35,12 +37,15 @@ public class Unit
 
     public void TurnStart()
     {
-        isActioned = false;
+        ap = 1;
         isDodge = false;
         isDefense = false;
         isCounter = false;
-        coverTarget.coveredTarget = null;
-        coverTarget = null;
+        if (coverTarget != null) 
+        { 
+            coverTarget.coveredTarget = null; 
+            coverTarget = null;
+        }
     }
 
     public void TurnEnd()
@@ -48,40 +53,10 @@ public class Unit
         isEnforce = false;
     }
 
-    public void DoAction()
-    {
-        isActioned = true;
-    }
-
-    public void Dodge()
-    {
-        isDodge = true;
-    }
-
-    public void Defense()
-    {
-        isDefense = true;
-    }
-
-    public void Counter()
-    {
-        isCounter = true;
-    }
-
-    public void Enforce()
-    {
-        isEnforce = true;
-    }
-
     public void Cover(Unit target)
     {
         coverTarget = target;
         target.coveredTarget = this;
-    }
-
-    public bool IsFullSkill()
-    {
-        return skills.Count == 4;
     }
 
     public void AddSkill(SkillID id)
@@ -103,4 +78,12 @@ public class Unit
 
         return string.Empty;
     }
+
+    public void DoAction() { ap -= 1; }
+    public void Dodge() { isDodge = true; }
+    public void Defense() { isDefense = true; }
+    public void Counter() { isCounter = true; }
+    public void Enforce() { isEnforce = true; }
+    public void ModifyAP(int count) { ap += count; }
+    public bool IsFullSkill() { return skills.Count == 4; }
 }

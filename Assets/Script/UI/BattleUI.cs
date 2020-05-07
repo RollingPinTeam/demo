@@ -5,8 +5,11 @@ using UnityEngine;
 
 public class ChooseHeroAction : SelectItem<UnitUI, Unit>
 {
-    public ChooseHeroAction(ListView<UnitUI, Unit> heros, int index) : base(heros, index)
+    public ChooseHeroAction(ListView<UnitUI, Unit> list, int index) : base(list, index) {}
+
+    public override void OnEnter()
     {
+        base.OnEnter();
         events.Add(InputCmd.Action1, ctx => BattleUI.inst.ExecuteHeroAction("Q"));
         events.Add(InputCmd.Action2, ctx => BattleUI.inst.ExecuteHeroAction("W"));
         events.Add(InputCmd.Action3, ctx => BattleUI.inst.ExecuteHeroAction("E"));
@@ -19,6 +22,7 @@ public class BattleUI : MonoBehaviour
 {  
     public static BattleUI inst;
     public GameObject comboTip;
+    public TextMeshProUGUI recordText;
     public TextMeshProUGUI tipText;
     public TextMeshProUGUI introText;
     public ChooseSkillUI chooseSkillUI;
@@ -31,6 +35,7 @@ public class BattleUI : MonoBehaviour
     public ListView<UnitUI, Unit> heroUIs { get; private set; } = new ListView<UnitUI, Unit>();
     public ListView<UnitUI, Unit> enemyUIs { get; private set; } = new ListView<UnitUI, Unit>();
     public ListView<ElementUI, ElementType> elementUIs { get; private set; } = new ListView<ElementUI, ElementType>();
+    private string record = string.Empty;
 
     private void Awake()
     {
@@ -42,7 +47,7 @@ public class BattleUI : MonoBehaviour
         UnitCfg.Init();
         InputMgr.inst.Init();
         ModelMgr.inst.Init();
-
+        
         elementUIs.SetItems(ModelMgr.inst.elements);
         heroUIs.SetItems(ModelMgr.inst.heros);
         enemyUIs.SetItems(ModelMgr.inst.enemys);
@@ -52,21 +57,40 @@ public class BattleUI : MonoBehaviour
     public void StartBattle()
     {
         enemyUIs.go.SetActive(true);
-        InputMgr.inst.Push(new ChooseHeroAction(heroUIs, 0));
+        TurnStart();
     }
 
     private void TurnStart()
     {
-
+        InputMgr.inst.Push(new ChooseHeroAction(heroUIs, 0));
+        ModelMgr.inst.heros.ForEach(item => item.TurnStart());
+        ModelMgr.inst.enemys.ForEach(item => item.TurnStart());
+        Refresh();
     }
 
     private void TurnEnd()
     {
+        ModelMgr.inst.heros.ForEach(item => item.TurnEnd());
+        ModelMgr.inst.enemys.ForEach(item => item.TurnEnd());
     }
 
     public void ExecuteHeroAction(string key)
     {
-        heroUIs.currItem.ExecuteAction(key);
+        heroUIs.currItem.ExecuteAction(key, () =>
+        {
+            Refresh();
+            var index = ModelMgr.inst.heros.FindIndex(item => item.ap > 0);
+            if (0 <= index && index < heroUIs.count)
+            {
+                heroUIs.SetFocus(index);
+            }
+            else
+            {
+                InputMgr.inst.Pop();
+                TurnEnd();
+                TurnStart();
+            }
+        });
     }
 
     public void ShowSkillInfo(SkillUI skill)
@@ -87,6 +111,19 @@ public class BattleUI : MonoBehaviour
     public void ShowTip(string text)
     {
         StartCoroutine(ShowTipCo(text));
+    }
+
+    public void Record(string text)
+    {
+        record += text + "\n";
+        recordText.text = record;
+    }
+
+    private void Refresh()
+    {
+        elementUIs.SetItems(ModelMgr.inst.elements);
+        heroUIs.Refresh();
+        enemyUIs.Refresh();
     }
 
     private IEnumerator ShowTipCo(string text)

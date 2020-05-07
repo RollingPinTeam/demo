@@ -14,15 +14,25 @@ public class ChooseSkill : SelectItem<SkillUI, Skill>
         int startIndex, 
         ChooseSkillUI chooseSkillUI) : base(skillUIs, startIndex)
     {
-        events.Add(InputCmd.Tab, ctx => BattleUI.inst.ShowComboTip());
         this.chooseSkillUI = chooseSkillUI;
+    }
+
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        events.Add(InputCmd.Tab, ctx => BattleUI.inst.ShowComboTip());
+        BattleUI.inst.heroUIs.SaveStash();
         BattleUI.inst.heroUIs.SetFocus(0);
         chooseSkillUI.ShowUnitInfo(BattleUI.inst.heroUIs.currItem);
     }
 
-    protected override void OnSelect(SkillUI skill)
+    public override void OnExit()
     {
-        BattleUI.inst.ShowSkillInfo(skill);
+        base.OnExit();
+        BattleUI.inst.heroUIs.ApplyStash();
+        BattleUI.inst.ShowSkillInfo(null);
+        chooseSkillUI.gameObject.SetActive(false);
+        BattleUI.inst.StartBattle();
     }
 
     protected override void OnChoose(SkillUI skill)
@@ -43,15 +53,6 @@ public class ChooseSkill : SelectItem<SkillUI, Skill>
                 InputMgr.inst.Pop();
             }
         }
-    }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-        BattleUI.inst.heroUIs.LostFocus();
-        BattleUI.inst.ShowSkillInfo(null);
-        chooseSkillUI.gameObject.SetActive(false);
-        BattleUI.inst.StartBattle();
     }
 }
 
@@ -74,7 +75,9 @@ public class ChooseSkillUI : MonoBehaviour
         }
 
         skillUIs.SetItems(args);
+        BattleUI.inst.StartBattle();
         InputMgr.inst.Push(new ChooseSkill(skillUIs, 0, this));
+        InputMgr.inst.Pop();
     }
 
     public void ShowUnitInfo(UnitUI unit)

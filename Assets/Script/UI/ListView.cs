@@ -33,6 +33,7 @@ public class ListView<T, TArgs> where T : ListItem<TArgs>
     public T currItem { get { return items[currIndex]; } }
     public int currIndex { get; private set; } = -1;
     public GameObject go { get; private set; }
+    private Stack<int> stashes = new Stack<int>();
     private int rowCount = 1;
     private ListSortType sortType;
     private GameObject prototype;
@@ -124,15 +125,22 @@ public class ListView<T, TArgs> where T : ListItem<TArgs>
         items[currIndex].SetFocus(true);
     }
 
-    public void LostFocus()
+    public void ApplyStash()
     {
         items.ForEach(item => 
         { 
             item.SetFocus(false);
             item.SetFocusActive(true);
         });
-
+        
         currIndex = -1;
+        var index = stashes.Count > 0 ? stashes.Pop() : -1;
+        SetFocus(index);
+    }
+
+    public void SaveStash() 
+    { 
+        stashes.Push(currIndex); 
     }
 
     private int GetOffset(MoveDir dir)
@@ -148,7 +156,10 @@ public class ListView<T, TArgs> where T : ListItem<TArgs>
         return 1;
     }
 
+    public void Refresh() { items.ForEach(item => item.Refresh(item.data)); }
     public T Get(int index) { return items[index]; }
+    public void ForEach(Action<T> action) { items.ForEach(action); }
     public T Find(Predicate<T> match) { return items.Find(match); }
+    public int FindIndex(Predicate<T> match) { return items.FindIndex(match); }
     public bool Exist(Predicate<T> match) { return items.Exists(match); }
 }

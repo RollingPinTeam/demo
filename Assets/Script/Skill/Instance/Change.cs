@@ -4,6 +4,7 @@ public class Change : Skill
 {
     public override void Execute(Env env)
     {
+        env.target.ModifyAP(1);
     }
 
     public override string GetName()
