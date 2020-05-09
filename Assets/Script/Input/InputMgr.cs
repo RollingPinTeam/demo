@@ -9,11 +9,13 @@ public class InputMgr
     public static readonly InputMgr inst = new InputMgr();
     private InputControls input;
     private Stack<Interaction> interactions = new Stack<Interaction>();
-    
+    private Vector2 axis;
+
     public void Init()
     {
         input = new InputControls();
         input.Enable();
+        
         input.UI.Navigate.performed += Navigate;
         input.UI.Submit.performed += ctx => Invoke(InputCmd.Submit, ctx);
         input.UI.Cancel.performed += ctx => Invoke(InputCmd.Cancel, ctx);
@@ -22,6 +24,15 @@ public class InputMgr
         input.UI.Action2.performed += ctx => Invoke(InputCmd.Action2, ctx);
         input.UI.Action3.performed += ctx => Invoke(InputCmd.Action3, ctx);
         input.UI.Action4.performed += ctx => Invoke(InputCmd.Action4, ctx);
+    }
+
+    public void FixedUpdate() 
+    {
+        if (interactions.Count <= 0)
+            return;
+
+        var item = interactions.Peek();
+        item.OnMove(input.Player.Move.ReadValue<Vector2>());
     }
 
     public void Push(Interaction interaction)
@@ -34,6 +45,14 @@ public class InputMgr
     {
         var item = interactions.Pop();
         item.OnExit();
+    }
+
+    private void Move(InputAction.CallbackContext ctx)
+    {
+        if (interactions.Count <= 0)
+            return;
+
+        Invoke(InputCmd.Move, ctx);
     }
 
     private void Navigate(InputAction.CallbackContext ctx)

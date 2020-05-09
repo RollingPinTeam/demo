@@ -40,7 +40,7 @@ public class UnitUI : ListItem<Unit>
         skillUIs.SetItems(unit.skills);
         SetFocusActive(unit.ap > 0);
         var buffStr = new StringBuilder();
-        if (unit.ap > 0) { buffStr.Append("，行动结束"); }
+        if (unit.ap <= 0) { buffStr.Append("，行动结束"); }
         if (unit.isDodge) { buffStr.Append("，闪避Up"); }
         if (unit.isDefense) { buffStr.Append("，防御Up"); }
         if (unit.isCounter) { buffStr.Append("，反击"); }

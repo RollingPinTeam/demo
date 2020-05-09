@@ -9,7 +9,7 @@ public enum PosType
 
 public class Unit 
 {
-    public int id;
+    public int id { get; private set; }
     public string name { get; private set; }
     public int hp { get; private set; }
     public int maxHp { get; private set; }
@@ -66,6 +66,11 @@ public class Unit
         skills.Add(skill);
     }
 
+    public void AddDamageType(DamageType type)
+    {
+
+    }
+
     private string GetKey(int index)
     {
         switch(index)
@@ -84,6 +89,7 @@ public class Unit
     public void Defense() { isDefense = true; }
     public void Counter() { isCounter = true; }
     public void Enforce() { isEnforce = true; }
-    public void ModifyAP(int count) { ap += count; }
+    public void ModifyHp(int value) { hp = Mathf.Clamp(hp + value, 0, maxHp); }
+    public void ModifyAP(int value) { ap += value; }
     public bool IsFullSkill() { return skills.Count == 4; }
 }

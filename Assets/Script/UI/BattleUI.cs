@@ -113,9 +113,9 @@ public class BattleUI : MonoBehaviour
         StartCoroutine(ShowTipCo(text));
     }
 
-    public void Record(string text)
+    public void Record(string text, params object[] args)
     {
-        record += text + "\n";
+        record += string.Format(text, args) + "\n";
         recordText.text = record;
     }
 

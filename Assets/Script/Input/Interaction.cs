@@ -6,6 +6,7 @@ using CmdAction = System.Action<UnityEngine.InputSystem.InputAction.CallbackCont
 
 public enum InputCmd
 {
+    Move,
     Up,
     Down,
     Left,
@@ -31,6 +32,7 @@ public class Interaction
         }
     }
 
+    public virtual void OnMove(Vector2 vector) {}
     public virtual void OnEnter() {}
     public virtual void OnExit() {}
 }
