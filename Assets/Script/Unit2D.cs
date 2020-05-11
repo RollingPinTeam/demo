@@ -7,8 +7,7 @@ public class Unit2D : MonoBehaviour
 
     private void Awake() 
     {
-        rb = GetComponent<Rigidbody2D>();    
-        // Debug.Log(rb.isKinematic);
+        rb = GetComponent<Rigidbody2D>();
     }
 
     public void Move(Vector2 delta)
